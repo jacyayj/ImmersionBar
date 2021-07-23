@@ -1,4 +1,4 @@
-package com.gyf.immersionbar;
+package com.gyf.immersionbar
 
 /**
  * Bar相关信息
@@ -6,126 +6,58 @@ package com.gyf.immersionbar;
  * @author geyifeng
  * @date 2019-05-10 18:43
  */
-public class BarProperties {
-
+class BarProperties {
     /**
      * 是否是竖屏
      */
-    private boolean portrait;
+    var isPortrait = false
+
     /**
      * 是否是左横屏
      */
-    private boolean landscapeLeft;
+    var isLandscapeLeft = false
+
     /**
      * 是否是右横屏
      */
-    private boolean landscapeRight;
+    var isLandscapeRight = false
+
     /**
      * 是否是刘海屏
      */
-    private boolean notchScreen;
+    var isNotchScreen = false
+
     /**
      * 是否有导航栏
      */
-    private boolean hasNavigationBar;
+    private var hasNavigationBar = false
+
     /**
      * 状态栏高度，刘海屏横竖屏有可能状态栏高度不一样
      */
-    private int statusBarHeight;
+    var statusBarHeight = 0
+
     /**
      * 导航栏高度
      */
-    private int navigationBarHeight;
+    var navigationBarHeight = 0
+
     /**
      * 导航栏宽度
      */
-    private int navigationBarWidth;
+    var navigationBarWidth = 0
+
     /**
      * 刘海屏高度
      */
-    private int notchHeight;
+    var notchHeight = 0
+
     /**
      * ActionBar高度
      */
-    private int actionBarHeight;
+    var actionBarHeight = 0
 
-    public boolean isPortrait() {
-        return portrait;
-    }
-
-    void setPortrait(boolean portrait) {
-        this.portrait = portrait;
-    }
-
-    public boolean isLandscapeLeft() {
-        return landscapeLeft;
-    }
-
-    void setLandscapeLeft(boolean landscapeLeft) {
-        this.landscapeLeft = landscapeLeft;
-    }
-
-    public boolean isLandscapeRight() {
-        return landscapeRight;
-    }
-
-    void setLandscapeRight(boolean landscapeRight) {
-        this.landscapeRight = landscapeRight;
-    }
-
-    public boolean isNotchScreen() {
-        return notchScreen;
-    }
-
-    void setNotchScreen(boolean notchScreen) {
-        this.notchScreen = notchScreen;
-    }
-
-    public boolean hasNavigationBar() {
-        return hasNavigationBar;
-    }
-
-    void setNavigationBar(boolean hasNavigationBar) {
-        this.hasNavigationBar = hasNavigationBar;
-    }
-
-    public int getStatusBarHeight() {
-        return statusBarHeight;
-    }
-
-    void setStatusBarHeight(int statusBarHeight) {
-        this.statusBarHeight = statusBarHeight;
-    }
-
-    public int getNavigationBarHeight() {
-        return navigationBarHeight;
-    }
-
-    void setNavigationBarHeight(int navigationBarHeight) {
-        this.navigationBarHeight = navigationBarHeight;
-    }
-
-    public int getNavigationBarWidth() {
-        return navigationBarWidth;
-    }
-
-    void setNavigationBarWidth(int navigationBarWidth) {
-        this.navigationBarWidth = navigationBarWidth;
-    }
-
-    public int getNotchHeight() {
-        return notchHeight;
-    }
-
-    void setNotchHeight(int notchHeight) {
-        this.notchHeight = notchHeight;
-    }
-
-    public int getActionBarHeight() {
-        return actionBarHeight;
-    }
-
-    void setActionBarHeight(int actionBarHeight) {
-        this.actionBarHeight = actionBarHeight;
+    fun setNavigationBar(hasNavigationBar: Boolean) {
+        this.hasNavigationBar = hasNavigationBar
     }
 }

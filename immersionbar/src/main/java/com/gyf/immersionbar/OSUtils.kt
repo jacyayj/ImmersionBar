@@ -1,9 +1,7 @@
-package com.gyf.immersionbar;
+package com.gyf.immersionbar
 
-import android.annotation.SuppressLint;
-import android.text.TextUtils;
-
-import java.lang.reflect.Method;
+import android.annotation.SuppressLint
+import android.text.TextUtils
 
 /**
  * 手机系统判断
@@ -11,11 +9,10 @@ import java.lang.reflect.Method;
  * @author geyifeng
  * @date 2017/4/18
  */
-public class OSUtils {
-
-    private static final String KEY_MIUI_VERSION_NAME = "ro.miui.ui.version.name";
-    private static final String KEY_EMUI_VERSION_NAME = "ro.build.version.emui";
-    private static final String KEY_DISPLAY = "ro.build.display.id";
+object OSUtils {
+    private const val KEY_MIUI_VERSION_NAME = "ro.miui.ui.version.name"
+    private const val KEY_EMUI_VERSION_NAME = "ro.build.version.emui"
+    private const val KEY_DISPLAY = "ro.build.display.id"
 
     /**
      * 判断是否为miui
@@ -23,10 +20,11 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isMIUI() {
-        String property = getSystemProperty(KEY_MIUI_VERSION_NAME, "");
-        return !TextUtils.isEmpty(property);
-    }
+    val isMIUI: Boolean
+        get() {
+            val property = getSystemProperty(KEY_MIUI_VERSION_NAME, "")
+            return !TextUtils.isEmpty(property)
+        }
 
     /**
      * 判断miui版本是否大于等于6
@@ -34,19 +32,19 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isMIUI6Later() {
-        String version = getMIUIVersion();
-        int num;
-        if ((!version.isEmpty())) {
-            try {
-                num = Integer.valueOf(version.substring(1));
-                return num >= 6;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        } else
-            return false;
-    }
+    val isMIUI6Later: Boolean
+        get() {
+            val version = mIUIVersion
+            val num: Int
+            return if (!version.isEmpty()) {
+                try {
+                    num = Integer.valueOf(version.substring(1))
+                    num >= 6
+                } catch (e: NumberFormatException) {
+                    false
+                }
+            } else false
+        }
 
     /**
      * 获得miui的版本
@@ -54,9 +52,8 @@ public class OSUtils {
      *
      * @return the miui version
      */
-    public static String getMIUIVersion() {
-        return isMIUI() ? getSystemProperty(KEY_MIUI_VERSION_NAME, "") : "";
-    }
+    val mIUIVersion: String
+        get() = if (isMIUI) getSystemProperty(KEY_MIUI_VERSION_NAME, "") else ""
 
     /**
      * 判断是否为emui
@@ -64,10 +61,11 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isEMUI() {
-        String property = getSystemProperty(KEY_EMUI_VERSION_NAME, "");
-        return !TextUtils.isEmpty(property);
-    }
+    val isEMUI: Boolean
+        get() {
+            val property = getSystemProperty(KEY_EMUI_VERSION_NAME, "")
+            return !TextUtils.isEmpty(property)
+        }
 
     /**
      * 得到emui的版本
@@ -75,9 +73,8 @@ public class OSUtils {
      *
      * @return the emui version
      */
-    public static String getEMUIVersion() {
-        return isEMUI() ? getSystemProperty(KEY_EMUI_VERSION_NAME, "") : "";
-    }
+    val eMUIVersion: String
+        get() = if (isEMUI) getSystemProperty(KEY_EMUI_VERSION_NAME, "") else ""
 
     /**
      * 判断是否为emui3.1版本
@@ -85,13 +82,13 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isEMUI3_1() {
-        String property = getEMUIVersion();
-        if ("EmotionUI 3".equals(property) || property.contains("EmotionUI_3.1")) {
-            return true;
+    val isEMUI3_1: Boolean
+        get() {
+            val property = eMUIVersion
+            return if ("EmotionUI 3" == property || property.contains("EmotionUI_3.1")) {
+                true
+            } else false
         }
-        return false;
-    }
 
     /**
      * 判断是否为emui3.0版本
@@ -99,13 +96,13 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isEMUI3_0() {
-        String property = getEMUIVersion();
-        if (property.contains("EmotionUI_3.0")) {
-            return true;
+    val isEMUI3_0: Boolean
+        get() {
+            val property = eMUIVersion
+            return if (property.contains("EmotionUI_3.0")) {
+                true
+            } else false
         }
-        return false;
-    }
 
     /**
      * 判断是否为emui3.x版本
@@ -113,9 +110,8 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isEMUI3_x() {
-        return OSUtils.isEMUI3_0() || OSUtils.isEMUI3_1();
-    }
+    val isEMUI3_x: Boolean
+        get() = isEMUI3_0 || isEMUI3_1
 
     /**
      * 判断是否为flymeOS
@@ -123,9 +119,8 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isFlymeOS() {
-        return getFlymeOSFlag().toLowerCase().contains("flyme");
-    }
+    val isFlymeOS: Boolean
+        get() = flymeOSFlag.toLowerCase().contains("flyme")
 
     /**
      * 判断flymeOS的版本是否大于等于4
@@ -133,23 +128,23 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isFlymeOS4Later() {
-        String version = getFlymeOSVersion();
-        int num;
-        if (!version.isEmpty()) {
-            try {
-                if (version.toLowerCase().contains("os")) {
-                    num = Integer.valueOf(version.substring(9, 10));
-                } else {
-                    num = Integer.valueOf(version.substring(6, 7));
+    val isFlymeOS4Later: Boolean
+        get() {
+            val version = flymeOSVersion
+            val num: Int
+            return if (!version.isEmpty()) {
+                try {
+                    num = if (version.toLowerCase().contains("os")) {
+                        Integer.valueOf(version.substring(9, 10))
+                    } else {
+                        Integer.valueOf(version.substring(6, 7))
+                    }
+                    num >= 4
+                } catch (e: NumberFormatException) {
+                    false
                 }
-                return num >= 4;
-            } catch (NumberFormatException e) {
-                return false;
-            }
+            } else false
         }
-        return false;
-    }
 
     /**
      * 判断flymeOS的版本是否等于5
@@ -157,24 +152,23 @@ public class OSUtils {
      *
      * @return the boolean
      */
-    public static boolean isFlymeOS5() {
-        String version = getFlymeOSVersion();
-        int num;
-        if (!version.isEmpty()) {
-            try {
-                if (version.toLowerCase().contains("os")) {
-                    num = Integer.valueOf(version.substring(9, 10));
-                } else {
-                    num = Integer.valueOf(version.substring(6, 7));
+    val isFlymeOS5: Boolean
+        get() {
+            val version = flymeOSVersion
+            val num: Int
+            return if (!version.isEmpty()) {
+                try {
+                    num = if (version.toLowerCase().contains("os")) {
+                        Integer.valueOf(version.substring(9, 10))
+                    } else {
+                        Integer.valueOf(version.substring(6, 7))
+                    }
+                    num == 5
+                } catch (e: NumberFormatException) {
+                    false
                 }
-                return num == 5;
-            } catch (NumberFormatException e) {
-                return false;
-            }
+            } else false
         }
-        return false;
-    }
-
 
     /**
      * 得到flymeOS的版本
@@ -182,22 +176,19 @@ public class OSUtils {
      *
      * @return the flyme os version
      */
-    public static String getFlymeOSVersion() {
-        return isFlymeOS() ? getSystemProperty(KEY_DISPLAY, "") : "";
-    }
+    val flymeOSVersion: String
+        get() = if (isFlymeOS) getSystemProperty(KEY_DISPLAY, "") else ""
+    private val flymeOSFlag: String
+        private get() = getSystemProperty(KEY_DISPLAY, "")
 
-    private static String getFlymeOSFlag() {
-        return getSystemProperty(KEY_DISPLAY, "");
-    }
-
-    private static String getSystemProperty(String key, String defaultValue) {
+    private fun getSystemProperty(key: String, defaultValue: String): String {
         try {
-            @SuppressLint("PrivateApi") Class<?> clz = Class.forName("android.os.SystemProperties");
-            Method method = clz.getMethod("get", String.class, String.class);
-            return (String) method.invoke(clz, key, defaultValue);
-        } catch (Exception e) {
-            e.printStackTrace();
+            @SuppressLint("PrivateApi") val clz = Class.forName("android.os.SystemProperties")
+            val method = clz.getMethod("get", String::class.java, String::class.java)
+            return method.invoke(clz, key, defaultValue) as String
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        return defaultValue;
+        return defaultValue
     }
 }
