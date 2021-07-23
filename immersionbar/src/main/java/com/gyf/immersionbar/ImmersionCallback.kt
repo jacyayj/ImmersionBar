@@ -1,4 +1,4 @@
-package com.gyf.immersionbar;
+package com.gyf.immersionbar
 
 /**
  * The interface Immersion callback.
@@ -6,5 +6,4 @@ package com.gyf.immersionbar;
  * @author geyifeng
  * @date 2019 /4/11 5:04 PM
  */
-interface ImmersionCallback extends OnNavigationBarListener, Runnable {
-}
+ interface ImmersionCallback : OnNavigationBarListener, Runnable

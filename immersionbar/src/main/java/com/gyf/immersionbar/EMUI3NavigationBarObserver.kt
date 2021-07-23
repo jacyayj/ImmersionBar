@@ -1,16 +1,12 @@
-package com.gyf.immersionbar;
+package com.gyf.immersionbar
 
-import android.app.Application;
-import android.database.ContentObserver;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
-
-import java.util.ArrayList;
-
-import static com.gyf.immersionbar.Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW;
+import android.app.Application
+import android.database.ContentObserver
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import java.util.*
 
 /**
  * 华为Emui3状态栏监听器
@@ -18,65 +14,54 @@ import static com.gyf.immersionbar.Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_
  * @author geyifeng
  * @date 2019/4/10 6:02 PM
  */
-final class EMUI3NavigationBarObserver extends ContentObserver {
 
-    private ArrayList<ImmersionCallback> mCallbacks;
-    private Application mApplication;
-    private Boolean mIsRegister = false;
+internal object EMUI3NavigationBarObserver : ContentObserver(Handler(Looper.getMainLooper())) {
+    private var mCallbacks: ArrayList<ImmersionCallback>? = null
+    private lateinit var mApplication: Application
+    private var mIsRegister = false
 
-    static EMUI3NavigationBarObserver getInstance() {
-        return NavigationBarObserverInstance.INSTANCE;
-    }
-
-    private EMUI3NavigationBarObserver() {
-        super(new Handler(Looper.getMainLooper()));
-    }
-
-    void register(Application application) {
-        this.mApplication = application;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication != null
-                && mApplication.getContentResolver() != null && !mIsRegister) {
-            Uri uri = Settings.System.getUriFor(IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW);
+    fun register(application: Application) {
+        mApplication = application
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication.contentResolver != null && !mIsRegister) {
+            val uri = Settings.System.getUriFor(Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW)
             if (uri != null) {
-                mApplication.getContentResolver().registerContentObserver(uri, true, this);
-                mIsRegister = true;
+                mApplication.contentResolver.registerContentObserver(uri, true, this)
+                mIsRegister = true
             }
         }
     }
 
-    @Override
-    public void onChange(boolean selfChange) {
-        super.onChange(selfChange);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication != null && mApplication.getContentResolver() != null
-                && mCallbacks != null && !mCallbacks.isEmpty()) {
-            int show = Settings.System.getInt(mApplication.getContentResolver(), IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW, 0);
-            for (ImmersionCallback callback : mCallbacks) {
-                callback.onNavigationBarChange(show != 1);
+    override fun onChange(selfChange: Boolean) {
+        super.onChange(selfChange)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication.contentResolver != null && mCallbacks != null && !mCallbacks!!.isEmpty()) {
+            val show = Settings.System.getInt(
+                mApplication.contentResolver,
+                Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW,
+                0
+            )
+            for (callback in mCallbacks!!) {
+                callback.onNavigationBarChange(show != 1)
             }
         }
     }
 
-    void addOnNavigationBarListener(ImmersionCallback callback) {
+    fun addOnNavigationBarListener(callback: ImmersionCallback?) {
         if (callback == null) {
-            return;
+            return
         }
         if (mCallbacks == null) {
-            mCallbacks = new ArrayList<>();
+            mCallbacks = ArrayList()
         }
-        if (!mCallbacks.contains(callback)) {
-            mCallbacks.add(callback);
+        if (!mCallbacks!!.contains(callback)) {
+            mCallbacks!!.add(callback)
         }
     }
 
-    void removeOnNavigationBarListener(ImmersionCallback callback) {
+    fun removeOnNavigationBarListener(callback: ImmersionCallback?) {
         if (callback == null || mCallbacks == null) {
-            return;
+            return
         }
-        mCallbacks.remove(callback);
-    }
-
-    private static class NavigationBarObserverInstance {
-        private static final EMUI3NavigationBarObserver INSTANCE = new EMUI3NavigationBarObserver();
+        mCallbacks!!.remove(callback)
     }
 
 }
