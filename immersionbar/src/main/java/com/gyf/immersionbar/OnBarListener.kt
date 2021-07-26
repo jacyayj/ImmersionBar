@@ -1,4 +1,4 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
 /**
  * The interface On bar listener.
@@ -6,11 +6,12 @@ package com.gyf.immersionbar
  * @author geyifeng
  * @date 2019 -05-10 18:22
  */
-interface OnBarListener {
+public interface OnBarListener {
+
     /**
      * On bar info change.
      *
      * @param barProperties the bar info
      */
-    fun onBarChange(barProperties: BarProperties?)
+    void onBarChange(BarProperties barProperties);
 }

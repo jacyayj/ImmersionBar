@@ -1,4 +1,4 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
 /**
  * The interface On navigation bar listener.
@@ -6,11 +6,11 @@ package com.gyf.immersionbar
  * @author geyifeng
  * @date 2019 /4/10 6:12 PM
  */
-interface OnNavigationBarListener {
+public interface OnNavigationBarListener {
     /**
      * On navigation bar change.
      *
      * @param show the show
      */
-    fun onNavigationBarChange(show: Boolean)
+    void onNavigationBarChange(boolean show);
 }

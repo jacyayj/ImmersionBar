@@ -1,63 +1,81 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
-import android.app.Dialog
-import android.content.res.Configuration
-import android.os.Build
-import android.view.Surface
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.view.Surface;
 
 /**
  * @author geyifeng
  * @date 2019/4/12 4:01 PM
  */
-internal class ImmersionDelegate : Runnable {
-    private lateinit var mImmersionBar: ImmersionBar
-    private var mBarProperties: BarProperties? = null
-    private var mOnBarListener: OnBarListener? = null
-    private var mNotchHeight = 0
+class ImmersionDelegate implements Runnable {
 
-    constructor(o: Any?) {
-        if (o is AppCompatActivity) {
+    private ImmersionBar mImmersionBar;
+    private BarProperties mBarProperties;
+    private OnBarListener mOnBarListener;
+    private int mNotchHeight;
+
+    ImmersionDelegate(Object o) {
+        if (o instanceof Activity) {
             if (mImmersionBar == null) {
-                mImmersionBar = ImmersionBar(o as AppCompatActivity?)
+                mImmersionBar = new ImmersionBar((Activity) o);
             }
-        } else if (o is Fragment) {
+        } else if (o instanceof Fragment) {
             if (mImmersionBar == null) {
-                mImmersionBar = if (o is DialogFragment) {
-                    ImmersionBar(dialogFragment = o)
+                if (o instanceof DialogFragment) {
+                    mImmersionBar = new ImmersionBar((DialogFragment) o);
                 } else {
-                    ImmersionBar(fragment = o)
+                    mImmersionBar = new ImmersionBar((Fragment) o);
+                }
+            }
+        } else if (o instanceof android.app.Fragment) {
+            if (mImmersionBar == null) {
+                if (o instanceof android.app.DialogFragment) {
+                    mImmersionBar = new ImmersionBar((android.app.DialogFragment) o);
+                } else {
+                    mImmersionBar = new ImmersionBar((android.app.Fragment) o);
                 }
             }
         }
     }
 
-    constructor(activity: AppCompatActivity?, dialog: Dialog?) {
-        mImmersionBar = ImmersionBar(activity, dialog)
+    ImmersionDelegate(Activity activity, Dialog dialog) {
+        if (mImmersionBar == null) {
+            mImmersionBar = new ImmersionBar(activity, dialog);
+        }
     }
 
-    fun get(): ImmersionBar {
-        return mImmersionBar
+    public ImmersionBar get() {
+        return mImmersionBar;
     }
 
-    fun onActivityCreated(configuration: Configuration) {
-        barChanged(configuration)
+    void onActivityCreated(Configuration configuration) {
+        barChanged(configuration);
     }
 
-    fun onResume() {
-        mImmersionBar.onResume()
+    void onResume() {
+        if (mImmersionBar != null) {
+            mImmersionBar.onResume();
+        }
     }
 
-    fun onDestroy() {
-        mBarProperties = null
-        mImmersionBar.onDestroy()
+    void onDestroy() {
+        mBarProperties = null;
+        if (mImmersionBar != null) {
+            mImmersionBar.onDestroy();
+            mImmersionBar = null;
+        }
     }
 
-    fun onConfigurationChanged(newConfig: Configuration) {
-        mImmersionBar.onConfigurationChanged(newConfig)
-        barChanged(newConfig)
+    void onConfigurationChanged(Configuration newConfig) {
+        if (mImmersionBar != null) {
+            mImmersionBar.onConfigurationChanged(newConfig);
+            barChanged(newConfig);
+        }
     }
 
     /**
@@ -66,54 +84,48 @@ internal class ImmersionDelegate : Runnable {
      *
      * @param configuration the configuration
      */
-    private fun barChanged(configuration: Configuration) {
-        if (mImmersionBar != null && mImmersionBar!!.initialized() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mOnBarListener = mImmersionBar.barParams.onBarListener
+    private void barChanged(Configuration configuration) {
+        if (mImmersionBar != null && mImmersionBar.initialized() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mOnBarListener = mImmersionBar.getBarParams().onBarListener;
             if (mOnBarListener != null) {
-                val activity = mImmersionBar.activity
+                final Activity activity = mImmersionBar.getActivity();
                 if (mBarProperties == null) {
-                    mBarProperties = BarProperties()
+                    mBarProperties = new BarProperties();
                 }
-                mBarProperties?.let {
-                    it.isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-                    when (activity?.windowManager?.defaultDisplay?.rotation) {
-                        Surface.ROTATION_90 -> {
-                            it.isLandscapeLeft = true
-                            it.isLandscapeRight = false
-                        }
-                        Surface.ROTATION_270 -> {
-                            it.isLandscapeLeft = false
-                            it.isLandscapeRight = true
-                        }
-                        else -> {
-                            it.isLandscapeLeft = false
-                            it.isLandscapeRight = false
-                        }
-                    }
+                mBarProperties.setPortrait(configuration.orientation == Configuration.ORIENTATION_PORTRAIT);
+                int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+                if (rotation == Surface.ROTATION_90) {
+                    mBarProperties.setLandscapeLeft(true);
+                    mBarProperties.setLandscapeRight(false);
+                } else if (rotation == Surface.ROTATION_270) {
+                    mBarProperties.setLandscapeLeft(false);
+                    mBarProperties.setLandscapeRight(true);
+                } else {
+                    mBarProperties.setLandscapeLeft(false);
+                    mBarProperties.setLandscapeRight(false);
                 }
-
-                activity!!.window.decorView.post(this)
+                activity.getWindow().getDecorView().post(this);
             }
         }
     }
 
-    override fun run() {
-        mImmersionBar.activity?.let {
-            val barConfig = BarConfig(it)
-            mBarProperties?.let {properties->
-                properties.statusBarHeight=barConfig.statusBarHeight
-                properties.setNavigationBar(barConfig.hasNavigationBar())
-                properties.navigationBarHeight=barConfig.navigationBarHeight
-                properties.navigationBarWidth=barConfig.navigationBarWidth
-                properties.actionBarHeight = barConfig.actionBarHeight
-                val notchScreen = NotchUtils.hasNotchScreen(it)
-                properties.isNotchScreen = notchScreen
-                if (notchScreen && mNotchHeight == 0) {
-                    mNotchHeight = NotchUtils.getNotchHeight(it)
-                    properties.notchHeight = (mNotchHeight)
-                }
+    @Override
+    public void run() {
+        if (mImmersionBar != null && mImmersionBar.getActivity() != null) {
+            Activity activity = mImmersionBar.getActivity();
+            BarConfig barConfig = new BarConfig(activity);
+            mBarProperties.setStatusBarHeight(barConfig.getStatusBarHeight());
+            mBarProperties.setNavigationBar(barConfig.hasNavigationBar());
+            mBarProperties.setNavigationBarHeight(barConfig.getNavigationBarHeight());
+            mBarProperties.setNavigationBarWidth(barConfig.getNavigationBarWidth());
+            mBarProperties.setActionBarHeight(barConfig.getActionBarHeight());
+            boolean notchScreen = NotchUtils.hasNotchScreen(activity);
+            mBarProperties.setNotchScreen(notchScreen);
+            if (notchScreen && mNotchHeight == 0) {
+                mNotchHeight = NotchUtils.getNotchHeight(activity);
+                mBarProperties.setNotchHeight(mNotchHeight);
             }
-            mOnBarListener?.onBarChange(mBarProperties)
+            mOnBarListener.onBarChange(mBarProperties);
         }
     }
 }

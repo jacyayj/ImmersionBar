@@ -1,12 +1,15 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.os.Build
-import android.view.*
-import java.lang.reflect.Field
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.os.Build;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Flyme OS 修改状态栏字体颜色工具类
@@ -14,11 +17,37 @@ import java.lang.reflect.Method
  * @author gyf
  * @date 2017 /05/30
  */
-internal object SpecialBarFontUtils {
-    private var mSetStatusBarColorIcon: Method? = null
-    private var mSetStatusBarDarkIcon: Method? = null
-    private var mStatusBarColorFiled: Field? = null
-    private var SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0
+class SpecialBarFontUtils {
+    private static Method mSetStatusBarColorIcon;
+    private static Method mSetStatusBarDarkIcon;
+    private static Field mStatusBarColorFiled;
+    private static int SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0;
+
+    static {
+        try {
+            mSetStatusBarColorIcon = Activity.class.getMethod("setStatusBarDarkIcon", int.class);
+        } catch (NoSuchMethodException ignored) {
+
+        }
+        try {
+            mSetStatusBarDarkIcon = Activity.class.getMethod("setStatusBarDarkIcon", boolean.class);
+        } catch (NoSuchMethodException ignored) {
+
+        }
+        try {
+            mStatusBarColorFiled = WindowManager.LayoutParams.class.getField("statusBarColor");
+        } catch (NoSuchFieldException ignored) {
+
+        }
+        try {
+            Field field = View.class.getField("SYSTEM_UI_FLAG_LIGHT_STATUS_BAR");
+            SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = field.getInt(null);
+        } catch (NoSuchFieldException ignored) {
+
+        } catch (IllegalAccessException ignored) {
+
+        }
+    }
 
     /**
      * 判断颜色是否偏黑色
@@ -27,9 +56,9 @@ internal object SpecialBarFontUtils {
      * @param level 级别
      * @return boolean boolean
      */
-    fun isBlackColor(color: Int, level: Int): Boolean {
-        val grey = toGrey(color)
-        return grey < level
+    static boolean isBlackColor(int color, int level) {
+        int grey = toGrey(color);
+        return grey < level;
     }
 
     /**
@@ -39,11 +68,11 @@ internal object SpecialBarFontUtils {
      * @return the int
      * @return　灰度值
      */
-    fun toGrey(rgb: Int): Int {
-        val blue = rgb and 0x000000FF
-        val green = rgb and 0x0000FF00 shr 8
-        val red = rgb and 0x00FF0000 shr 16
-        return red * 38 + green * 75 + blue * 15 shr 7
+    static int toGrey(int rgb) {
+        int blue = rgb & 0x000000FF;
+        int green = (rgb & 0x0000FF00) >> 8;
+        int red = (rgb & 0x00FF0000) >> 16;
+        return (red * 38 + green * 75 + blue * 15) >> 7;
     }
 
     /**
@@ -52,22 +81,22 @@ internal object SpecialBarFontUtils {
      * @param activity 当前activity
      * @param color    颜色
      */
-    fun setStatusBarDarkIcon(activity: Activity?, color: Int) {
+    public static void setStatusBarDarkIcon(Activity activity, int color) {
         if (mSetStatusBarColorIcon != null) {
             try {
-                mSetStatusBarColorIcon!!.invoke(activity, color)
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
+                mSetStatusBarColorIcon.invoke(activity, color);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
         } else {
-            val whiteColor = isBlackColor(color, 50)
+            boolean whiteColor = isBlackColor(color, 50);
             if (mStatusBarColorFiled != null) {
-                setStatusBarDarkIcon(activity, whiteColor, whiteColor)
-                setStatusBarDarkIcon(activity!!.window, color)
+                setStatusBarDarkIcon(activity, whiteColor, whiteColor);
+                setStatusBarDarkIcon(activity.getWindow(), color);
             } else {
-                setStatusBarDarkIcon(activity, whiteColor)
+                setStatusBarDarkIcon(activity, whiteColor);
             }
         }
     }
@@ -78,14 +107,14 @@ internal object SpecialBarFontUtils {
      * @param window 当前窗口
      * @param color  颜色
      */
-    fun setStatusBarDarkIcon(window: Window, color: Int) {
+    public static void setStatusBarDarkIcon(Window window, int color) {
         try {
-            setStatusBarColor(window, color)
+            setStatusBarColor(window, color);
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                setStatusBarDarkIcon(window.decorView, true)
+                setStatusBarDarkIcon(window.getDecorView(), true);
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -95,42 +124,38 @@ internal object SpecialBarFontUtils {
      * @param activity 当前activity
      * @param dark     是否深色 true为深色 false 为白色
      */
-    fun setStatusBarDarkIcon(activity: Activity?, dark: Boolean) {
-        setStatusBarDarkIcon(activity, dark, true)
+    public static void setStatusBarDarkIcon(Activity activity, boolean dark) {
+        setStatusBarDarkIcon(activity, dark, true);
     }
 
-    private fun changeMeizuFlag(
-        winParams: WindowManager.LayoutParams,
-        flagName: String,
-        on: Boolean
-    ): Boolean {
+    private static boolean changeMeizuFlag(WindowManager.LayoutParams winParams, String flagName, boolean on) {
         try {
-            val f = winParams.javaClass.getDeclaredField(flagName)
-            f.isAccessible = true
-            val bits = f.getInt(winParams)
-            val f2 = winParams.javaClass.getDeclaredField("meizuFlags")
-            f2.isAccessible = true
-            var meizuFlags = f2.getInt(winParams)
-            val oldFlags = meizuFlags
-            meizuFlags = if (on) {
-                meizuFlags or bits
+            Field f = winParams.getClass().getDeclaredField(flagName);
+            f.setAccessible(true);
+            int bits = f.getInt(winParams);
+            Field f2 = winParams.getClass().getDeclaredField("meizuFlags");
+            f2.setAccessible(true);
+            int meizuFlags = f2.getInt(winParams);
+            int oldFlags = meizuFlags;
+            if (on) {
+                meizuFlags |= bits;
             } else {
-                meizuFlags and bits.inv()
+                meizuFlags &= ~bits;
             }
             if (oldFlags != meizuFlags) {
-                f2.setInt(winParams, meizuFlags)
-                return true
+                f2.setInt(winParams, meizuFlags);
+                return true;
             }
-        } catch (e: NoSuchFieldException) {
-            e.printStackTrace()
-        } catch (e: IllegalAccessException) {
-            e.printStackTrace()
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-        } catch (e: Throwable) {
-            e.printStackTrace()
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
-        return false
+        return false;
     }
 
     /**
@@ -139,16 +164,16 @@ internal object SpecialBarFontUtils {
      * @param view
      * @param dark
      */
-    private fun setStatusBarDarkIcon(view: View, dark: Boolean) {
-        val oldVis = view.systemUiVisibility
-        var newVis = oldVis
-        newVis = if (dark) {
-            newVis or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+    private static void setStatusBarDarkIcon(View view, boolean dark) {
+        int oldVis = view.getSystemUiVisibility();
+        int newVis = oldVis;
+        if (dark) {
+            newVis |= SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         } else {
-            newVis and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            newVis &= ~SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         }
         if (newVis != oldVis) {
-            view.systemUiVisibility = newVis
+            view.setSystemUiVisibility(newVis);
         }
     }
 
@@ -158,17 +183,17 @@ internal object SpecialBarFontUtils {
      * @param window
      * @param color
      */
-    private fun setStatusBarColor(window: Window, color: Int) {
-        val winParams = window.attributes
+    private static void setStatusBarColor(Window window, int color) {
+        WindowManager.LayoutParams winParams = window.getAttributes();
         if (mStatusBarColorFiled != null) {
             try {
-                val oldColor = mStatusBarColorFiled!!.getInt(winParams)
+                int oldColor = mStatusBarColorFiled.getInt(winParams);
                 if (oldColor != color) {
-                    mStatusBarColorFiled!![winParams] = color
-                    window.attributes = winParams
+                    mStatusBarColorFiled.set(winParams, color);
+                    window.setAttributes(winParams);
                 }
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -179,80 +204,52 @@ internal object SpecialBarFontUtils {
      * @param window 当前窗口
      * @param dark   是否深色 true为深色 false 为白色
      */
-    fun setStatusBarDarkIcon(window: Window, dark: Boolean) {
+    public static void setStatusBarDarkIcon(Window window, boolean dark) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            changeMeizuFlag(window.attributes, "MEIZU_FLAG_DARK_STATUS_BAR_ICON", dark)
+            changeMeizuFlag(window.getAttributes(), "MEIZU_FLAG_DARK_STATUS_BAR_ICON", dark);
         } else {
-            val decorView = window.decorView
-            setStatusBarDarkIcon(decorView, dark)
-            setStatusBarColor(window, 0)
+            View decorView = window.getDecorView();
+            setStatusBarDarkIcon(decorView, dark);
+            setStatusBarColor(window, 0);
         }
     }
 
-    private fun setStatusBarDarkIcon(activity: Activity?, dark: Boolean, flag: Boolean) {
+    private static void setStatusBarDarkIcon(Activity activity, boolean dark, boolean flag) {
         if (mSetStatusBarDarkIcon != null) {
             try {
-                mSetStatusBarDarkIcon!!.invoke(activity, dark)
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
+                mSetStatusBarDarkIcon.invoke(activity, dark);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
         } else {
             if (flag) {
-                setStatusBarDarkIcon(activity!!.window, dark)
+                setStatusBarDarkIcon(activity.getWindow(), dark);
             }
         }
     }
 
     @SuppressLint("PrivateApi")
-    fun setMIUIBarDark(window: Window?, key: String?, dark: Boolean) {
+    static void setMIUIBarDark(Window window, String key, boolean dark) {
         if (window != null) {
-            val clazz: Class<out Window> = window.javaClass
+            Class<? extends Window> clazz = window.getClass();
             try {
-                val darkModeFlag: Int
-                val layoutParams = Class.forName("android.view.MiuiWindowManager\$LayoutParams")
-                val field = layoutParams.getField(key)
-                darkModeFlag = field.getInt(layoutParams)
-                val extraFlagField = clazz.getMethod(
-                    "setExtraFlags",
-                    Int::class.javaPrimitiveType,
-                    Int::class.javaPrimitiveType
-                )
+                int darkModeFlag;
+                Class<?> layoutParams = Class.forName("android.view.MiuiWindowManager$LayoutParams");
+                Field field = layoutParams.getField(key);
+                darkModeFlag = field.getInt(layoutParams);
+                Method extraFlagField = clazz.getMethod("setExtraFlags", int.class, int.class);
                 if (dark) {
                     //状态栏透明且黑色字体
-                    extraFlagField.invoke(window, darkModeFlag, darkModeFlag)
+                    extraFlagField.invoke(window, darkModeFlag, darkModeFlag);
                 } else {
                     //清除黑色字体
-                    extraFlagField.invoke(window, 0, darkModeFlag)
+                    extraFlagField.invoke(window, 0, darkModeFlag);
                 }
-            } catch (ignored: Exception) {
-            }
-        }
-    }
+            } catch (Exception ignored) {
 
-    init {
-        try {
-            mSetStatusBarColorIcon =
-                Activity::class.java.getMethod("setStatusBarDarkIcon", Int::class.javaPrimitiveType)
-        } catch (ignored: NoSuchMethodException) {
-        }
-        try {
-            mSetStatusBarDarkIcon = Activity::class.java.getMethod(
-                "setStatusBarDarkIcon",
-                Boolean::class.javaPrimitiveType
-            )
-        } catch (ignored: NoSuchMethodException) {
-        }
-        try {
-            mStatusBarColorFiled = WindowManager.LayoutParams::class.java.getField("statusBarColor")
-        } catch (ignored: NoSuchFieldException) {
-        }
-        try {
-            val field = View::class.java.getField("SYSTEM_UI_FLAG_LIGHT_STATUS_BAR")
-            SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = field.getInt(null)
-        } catch (ignored: NoSuchFieldException) {
-        } catch (ignored: IllegalAccessException) {
+            }
         }
     }
 }

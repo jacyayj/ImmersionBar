@@ -1,15 +1,21 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
-import android.app.Dialog
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
-import java.util.*
+import android.app.Activity;
+import android.app.Dialog;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The type Request manager retriever.
@@ -17,13 +23,34 @@ import java.util.*
  * @author geyifeng
  * @date 2019 /4/12 4:21 PM
  */
-internal object RequestManagerRetriever : Handler.Callback {
-    private val mTag = ImmersionBar::class.java.name
-    private val mHandler: Handler = Handler(Looper.getMainLooper(), this)
+class RequestManagerRetriever implements Handler.Callback {
 
-    private val mPendingFragments: MutableMap<FragmentManager, Fragment> = HashMap()
-    private val mPendingSupportFragments: MutableMap<FragmentManager, SupportRequestManagerFragment> =
-        HashMap()
+    private String mTag = ImmersionBar.class.getName();
+
+    private Handler mHandler;
+
+    private static final int ID_REMOVE_FRAGMENT_MANAGER = 1;
+    private static final int ID_REMOVE_SUPPORT_FRAGMENT_MANAGER = 2;
+
+    private static class Holder {
+        private static final RequestManagerRetriever INSTANCE = new RequestManagerRetriever();
+    }
+
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
+    static RequestManagerRetriever getInstance() {
+        return Holder.INSTANCE;
+    }
+
+    private RequestManagerRetriever() {
+        mHandler = new Handler(Looper.getMainLooper(), this);
+    }
+
+    private final Map<android.app.FragmentManager, RequestManagerFragment> mPendingFragments = new HashMap<>();
+    private final Map<FragmentManager, SupportRequestManagerFragment> mPendingSupportFragments = new HashMap<>();
 
     /**
      * Get immersion bar.
@@ -31,9 +58,14 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param activity the activity
      * @return the immersion bar
      */
-    operator fun get(activity: AppCompatActivity): ImmersionBar? {
-        val tag = mTag + System.identityHashCode(activity)
-        return getSupportFragment(activity.supportFragmentManager, tag)?.get(activity)
+    public ImmersionBar get(Activity activity) {
+        checkNotNull(activity, "activity is null");
+        String tag = mTag + System.identityHashCode(activity);
+        if (activity instanceof FragmentActivity) {
+            return getSupportFragment(((FragmentActivity) activity).getSupportFragmentManager(), tag).get(activity);
+        } else {
+            return getFragment(activity.getFragmentManager(), tag).get(activity);
+        }
     }
 
     /**
@@ -43,20 +75,44 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param isOnly   the is only
      * @return the immersion bar
      */
-    operator fun get(fragment: Fragment, isOnly: Boolean): ImmersionBar? {
-        checkNotNull(fragment.activity, { "fragment.getActivity() is null" })
-        if (fragment is DialogFragment) {
-            checkNotNull(fragment.dialog, { "fragment.getDialog() is null" })
+    public ImmersionBar get(Fragment fragment, boolean isOnly) {
+        checkNotNull(fragment, "fragment is null");
+        checkNotNull(fragment.getActivity(), "fragment.getActivity() is null");
+        if (fragment instanceof DialogFragment) {
+            checkNotNull(((DialogFragment) fragment).getDialog(), "fragment.getDialog() is null");
         }
-        var tag = mTag
+        String tag = mTag;
         if (isOnly) {
-            tag += fragment.javaClass.name
+            tag += fragment.getClass().getName();
         } else {
-            tag += System.identityHashCode(fragment)
+            tag += System.identityHashCode(fragment);
         }
-        return getSupportFragment(fragment.childFragmentManager, tag)!![fragment]
+        return getSupportFragment(fragment.getChildFragmentManager(), tag).get(fragment);
     }
 
+
+    /**
+     * Get immersion bar.
+     *
+     * @param fragment the fragment
+     * @param isOnly   the is only
+     * @return the immersion bar
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public ImmersionBar get(android.app.Fragment fragment, boolean isOnly) {
+        checkNotNull(fragment, "fragment is null");
+        checkNotNull(fragment.getActivity(), "fragment.getActivity() is null");
+        if (fragment instanceof android.app.DialogFragment) {
+            checkNotNull(((android.app.DialogFragment) fragment).getDialog(), "fragment.getDialog() is null");
+        }
+        String tag = mTag;
+        if (isOnly) {
+            tag += fragment.getClass().getName();
+        } else {
+            tag += System.identityHashCode(fragment);
+        }
+        return getFragment(fragment.getChildFragmentManager(), tag).get(fragment);
+    }
 
     /**
      * Get immersion bar.
@@ -65,9 +121,15 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param dialog   the dialog
      * @return the immersion bar
      */
-    operator fun get(activity: AppCompatActivity, dialog: Dialog): ImmersionBar? {
-        val tag = mTag + System.identityHashCode(dialog)
-        return getSupportFragment(activity.supportFragmentManager, tag)?.get(activity, dialog)
+    public ImmersionBar get(Activity activity, Dialog dialog) {
+        checkNotNull(activity, "activity is null");
+        checkNotNull(dialog, "dialog is null");
+        String tag = mTag + System.identityHashCode(dialog);
+        if (activity instanceof FragmentActivity) {
+            return getSupportFragment(((FragmentActivity) activity).getSupportFragmentManager(), tag).get(activity, dialog);
+        } else {
+            return getFragment(activity.getFragmentManager(), tag).get(activity, dialog);
+        }
     }
 
     /**
@@ -75,17 +137,17 @@ internal object RequestManagerRetriever : Handler.Callback {
      *
      * @param fragment the fragment
      */
-    fun destroy(fragment: Fragment?, isOnly: Boolean) {
+    public void destroy(Fragment fragment, boolean isOnly) {
         if (fragment == null) {
-            return
+            return;
         }
-        var tag = mTag
+        String tag = mTag;
         if (isOnly) {
-            tag += fragment.javaClass.name
+            tag += fragment.getClass().getName();
         } else {
-            tag += System.identityHashCode(fragment)
+            tag += System.identityHashCode(fragment);
         }
-        getSupportFragment(fragment.childFragmentManager, tag, true)
+        getSupportFragment(fragment.getChildFragmentManager(), tag, true);
     }
 
     /**
@@ -94,92 +156,96 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param activity the activity
      * @param dialog   the dialog
      */
-    fun destroy(activity: AppCompatActivity, dialog: Dialog?) {
-        val tag = mTag + System.identityHashCode(dialog)
-        val fragment = getSupportFragment(activity.supportFragmentManager, tag, true)
-        if (fragment != null) {
-            fragment[activity, dialog]!!.onDestroy()
+    public void destroy(Activity activity, Dialog dialog) {
+        if (activity == null || dialog == null) {
+            return;
+        }
+        String tag = mTag + System.identityHashCode(dialog);
+        if (activity instanceof FragmentActivity) {
+            SupportRequestManagerFragment fragment = getSupportFragment(((FragmentActivity) activity).getSupportFragmentManager(), tag, true);
+            if (fragment != null) {
+                fragment.get(activity, dialog).onDestroy();
+            }
+        } else {
+            RequestManagerFragment fragment = getFragment(activity.getFragmentManager(), tag, true);
+            if (fragment != null) {
+                fragment.get(activity, dialog).onDestroy();
+            }
         }
     }
 
-    override fun handleMessage(msg: Message): Boolean {
-        var handled = true
-        when (msg.what) {
-            ID_REMOVE_FRAGMENT_MANAGER -> {
-                val fm = msg.obj as FragmentManager
-                mPendingFragments.remove(fm)
-            }
-            ID_REMOVE_SUPPORT_FRAGMENT_MANAGER -> {
-                val supportFm = msg.obj as FragmentManager
-                mPendingSupportFragments.remove(supportFm)
-            }
-            else -> handled = false
+    @Override
+    public boolean handleMessage(Message msg) {
+        boolean handled = true;
+        switch (msg.what) {
+            case ID_REMOVE_FRAGMENT_MANAGER:
+                android.app.FragmentManager fm = (android.app.FragmentManager) msg.obj;
+                mPendingFragments.remove(fm);
+                break;
+            case ID_REMOVE_SUPPORT_FRAGMENT_MANAGER:
+                FragmentManager supportFm = (FragmentManager) msg.obj;
+                mPendingSupportFragments.remove(supportFm);
+                break;
+            default:
+                handled = false;
+                break;
         }
-        return handled
+        return handled;
     }
 
-    private fun getFragment(fm: FragmentManager, tag: String): Fragment? {
-        return getFragment(fm, tag, false)
+    private RequestManagerFragment getFragment(android.app.FragmentManager fm, String tag) {
+        return getFragment(fm, tag, false);
     }
 
-    private fun getFragment(
-        fm: FragmentManager,
-        tag: String,
-        destroy: Boolean
-    ): Fragment? {
-        var fragment: Fragment? = fm.findFragmentByTag(tag)
+    private RequestManagerFragment getFragment(android.app.FragmentManager fm, String tag, boolean destroy) {
+        RequestManagerFragment fragment = (RequestManagerFragment) fm.findFragmentByTag(tag);
         if (fragment == null) {
-            fragment = mPendingFragments[fm]
+            fragment = mPendingFragments.get(fm);
             if (fragment == null) {
                 if (destroy) {
-                    return null
+                    return null;
                 }
-                fragment = RequestManagerFragment()
-                mPendingFragments[fm] = fragment
-                fm.beginTransaction().add(fragment, tag).commitAllowingStateLoss()
-                mHandler.obtainMessage(ID_REMOVE_FRAGMENT_MANAGER, fm).sendToTarget()
+                fragment = new RequestManagerFragment();
+                mPendingFragments.put(fm, fragment);
+                fm.beginTransaction().add(fragment, tag).commitAllowingStateLoss();
+                mHandler.obtainMessage(ID_REMOVE_FRAGMENT_MANAGER, fm).sendToTarget();
             }
         }
         if (destroy) {
-            fm.beginTransaction().remove(fragment).commitAllowingStateLoss()
-            return null
+            fm.beginTransaction().remove(fragment).commitAllowingStateLoss();
+            return null;
         }
-        return fragment
+        return fragment;
     }
 
-    private fun getSupportFragment(
-        fm: FragmentManager,
-        tag: String
-    ): SupportRequestManagerFragment? {
-        return getSupportFragment(fm, tag, false)
+    private SupportRequestManagerFragment getSupportFragment(FragmentManager fm, String tag) {
+        return getSupportFragment(fm, tag, false);
     }
 
-    private fun getSupportFragment(
-        fm: FragmentManager,
-        tag: String,
-        destroy: Boolean
-    ): SupportRequestManagerFragment? {
-        var fragment = fm.findFragmentByTag(tag) as SupportRequestManagerFragment?
+    private SupportRequestManagerFragment getSupportFragment(FragmentManager fm, String tag, boolean destroy) {
+        SupportRequestManagerFragment fragment = (SupportRequestManagerFragment) fm.findFragmentByTag(tag);
         if (fragment == null) {
-            fragment = mPendingSupportFragments[fm]
+            fragment = mPendingSupportFragments.get(fm);
             if (fragment == null) {
                 if (destroy) {
-                    return null
+                    return null;
                 }
-                fragment = SupportRequestManagerFragment()
-                mPendingSupportFragments[fm] = fragment
-                fm.beginTransaction().add(fragment, tag).commitAllowingStateLoss()
-                mHandler.obtainMessage(ID_REMOVE_SUPPORT_FRAGMENT_MANAGER, fm).sendToTarget()
+                fragment = new SupportRequestManagerFragment();
+                mPendingSupportFragments.put(fm, fragment);
+                fm.beginTransaction().add(fragment, tag).commitAllowingStateLoss();
+                mHandler.obtainMessage(ID_REMOVE_SUPPORT_FRAGMENT_MANAGER, fm).sendToTarget();
             }
         }
         if (destroy) {
-            fm.beginTransaction().remove(fragment).commitAllowingStateLoss()
-            return null
+            fm.beginTransaction().remove(fragment).commitAllowingStateLoss();
+            return null;
         }
-        return fragment
+        return fragment;
     }
 
-    private const val ID_REMOVE_FRAGMENT_MANAGER = 1
-    private const val ID_REMOVE_SUPPORT_FRAGMENT_MANAGER = 2
-
+    private static <T> void checkNotNull(@Nullable T arg, @NonNull String message) {
+        if (arg == null) {
+            throw new NullPointerException(message);
+        }
+    }
 }

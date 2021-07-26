@@ -1,11 +1,13 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
-import android.graphics.Color
-import android.view.View
-import android.view.WindowManager
-import androidx.annotation.ColorInt
-import androidx.annotation.FloatRange
-import java.util.*
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
+import android.support.annotation.FloatRange;
+import android.view.View;
+import android.view.WindowManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 沉浸式参数信息
@@ -13,248 +15,220 @@ import java.util.*
  * @author geyifeng
  * @date 2017 /5/9
  */
-class BarParams : Cloneable {
+public class BarParams implements Cloneable {
     /**
      * 状态栏颜色
      * The Status bar color.
      */
     @ColorInt
-    var statusBarColor = Color.TRANSPARENT
-
+    public int statusBarColor = Color.TRANSPARENT;
     /**
      * 导航栏颜色
      * The Navigation bar color.
      */
     @ColorInt
-    var navigationBarColor = Color.BLACK
+    public int navigationBarColor = Color.BLACK;
 
     /**
      * The Default navigation bar color.
      */
-    var defaultNavigationBarColor = Color.BLACK
-
+    public int defaultNavigationBarColor = Color.BLACK;
     /**
      * 状态栏透明度
      * The Status bar alpha.
      */
-    @FloatRange(from = 0.0, to = 1.0)
-    var statusBarAlpha = 0.0f
+    @FloatRange(from = 0f, to = 1f)
+    public float statusBarAlpha = 0.0f;
 
-    @FloatRange(from = 0.0, to = 1.0)
-    var statusBarTempAlpha = 0.0f
-
+    @FloatRange(from = 0f, to = 1f)
+    public float statusBarTempAlpha = 0.0f;
     /**
      * 导航栏透明度
      * The Navigation bar alpha.
      */
-    @FloatRange(from = 0.0, to = 1.0)
-    var navigationBarAlpha = 0.0f
-
-    @FloatRange(from = 0.0, to = 1.0)
-    var navigationBarTempAlpha = 0.0f
-
+    @FloatRange(from = 0f, to = 1f)
+    public float navigationBarAlpha = 0.0f;
+    @FloatRange(from = 0f, to = 1f)
+    public float navigationBarTempAlpha = 0.0f;
     /**
      * 有导航栏的情况，全屏显示
      * The Full screen.
      */
-    var fullScreen = false
-
+    public boolean fullScreen = false;
     /**
      * 是否隐藏了导航栏
      * The Hide navigation bar.
      */
-    var hideNavigationBar = false
-
+    public boolean hideNavigationBar = false;
     /**
      * 隐藏Bar
      * The Bar hide.
      */
-    var barHide = BarHide.FLAG_SHOW_BAR
-
+    public BarHide barHide = BarHide.FLAG_SHOW_BAR;
     /**
      * 状态栏字体深色与亮色标志位
      * The Dark font.
      */
-    var statusBarDarkFont = false
+    public boolean statusBarDarkFont = false;
 
     /**
      * 导航栏图标深色与亮色标志位
      * The Navigation bar dark icon.
      */
-    var navigationBarDarkIcon = false
-
+    public boolean navigationBarDarkIcon = false;
     /**
      * 是否启用 自动根据StatusBar颜色调整深色模式与亮色模式
      * The Auto status bar dark mode enable.
      */
-    var autoStatusBarDarkModeEnable = false
+    public boolean autoStatusBarDarkModeEnable = false;
 
     /**
      * 是否启用 自动根据NavigationBar颜色调整深色模式与亮色模式
      * The Auto navigation bar dark mode enable.
      */
-    var autoNavigationBarDarkModeEnable = false
+    public boolean autoNavigationBarDarkModeEnable = false;
 
     /**
      * The Auto status bar dark mode alpha.
      */
-    @FloatRange(from = 0.0, to = 1.0)
-    var autoStatusBarDarkModeAlpha = 0.0f
+    @FloatRange(from = 0f, to = 1f)
+    public float autoStatusBarDarkModeAlpha = 0.0f;
 
     /**
      * The Auto navigation bar dark mode alpha.
      */
-    @FloatRange(from = 0.0, to = 1.0)
-    var autoNavigationBarDarkModeAlpha = 0.0f
+    @FloatRange(from = 0f, to = 1f)
+    public float autoNavigationBarDarkModeAlpha = 0.0f;
 
     /**
      * 是否可以修改状态栏颜色
      * The Status bar flag.
      */
-    var statusBarColorEnabled = true
-
+    public boolean statusBarColorEnabled = true;
     /**
      * 状态栏变换后的颜色
      * The Status bar color transform.
      */
     @ColorInt
-    var statusBarColorTransform = Color.BLACK
-
+    public int statusBarColorTransform = Color.BLACK;
     /**
      * 导航栏变换后的颜色
      * The Navigation bar color transform.
      */
     @ColorInt
-    var navigationBarColorTransform = Color.BLACK
-
+    public int navigationBarColorTransform = Color.BLACK;
     /**
      * 支持view变色
      * The View map.
      */
-    var viewMap: MutableMap<View, Map<Int, Int>> = HashMap()
-
+    Map<View, Map<Integer, Integer>> viewMap = new HashMap<>();
     /**
      * The View alpha.
      */
-    @FloatRange(from = 0.0, to = 1.0)
-    var viewAlpha = 0.0f
-
+    @FloatRange(from = 0f, to = 1f)
+    public float viewAlpha = 0.0f;
     /**
      * The Status bar color content view.
      */
     @ColorInt
-    var contentColor = Color.TRANSPARENT
-
+    public int contentColor = Color.TRANSPARENT;
     /**
      * The Status bar color content view transform.
      */
     @ColorInt
-    var contentColorTransform = Color.BLACK
-
+    public int contentColorTransform = Color.BLACK;
     /**
      * The Status bar content view alpha.
      */
-    @FloatRange(from = 0.0, to = 1.0)
-    var contentAlpha = 0.0f
-
+    @FloatRange(from = 0f, to = 1f)
+    public float contentAlpha = 0.0f;
     /**
      * 解决标题栏与状态栏重叠问题
      * The Fits.
      */
-    var fits = false
-
+    public boolean fits = false;
     /**
      * 解决标题栏与状态栏重叠问题
      * The Title bar view.
      */
-    var titleBarView: View? = null
-
+    public View titleBarView;
     /**
      * 解决标题栏与状态栏重叠问题
      * The Status bar view by height.
      */
-    var statusBarView: View? = null
-
+    public View statusBarView;
     /**
      * 是否可以解决标题栏与状态栏重叠问题
      */
-    var fitsLayoutOverlapEnable = true
-
+    public boolean fitsLayoutOverlapEnable = true;
     /**
      * flymeOS状态栏字体变色
      * The Flyme os status bar font color.
      */
     @ColorInt
-    var flymeOSStatusBarFontColor = 0
-
+    public int flymeOSStatusBarFontColor;
     @ColorInt
-    var flymeOSStatusBarFontTempColor = 0
-
+    public int flymeOSStatusBarFontTempColor;
     /**
      * 结合actionBar使用
      * The Is support action bar.
      */
-    var isSupportActionBar = false
-
+    public boolean isSupportActionBar = false;
     /**
      * 解决软键盘与输入框冲突问题
      * The Keyboard enable.
      */
-    var keyboardEnable = false
+    public boolean keyboardEnable = false;
 
     /**
      * 软键盘属性
      * The Keyboard mode.
      */
-    var keyboardMode = (WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
-            or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-
+    public int keyboardMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+            | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
     /**
      * 是否能修改导航栏颜色
      * The Navigation bar enable.
      */
-    var navigationBarEnable = true
-
+    public boolean navigationBarEnable = true;
     /**
      * 是否能修改4.4手机以及华为emui3.1导航栏颜色
      * The Navigation bar with kitkat enable.
      */
-    var navigationBarWithKitkatEnable = true
-
+    public boolean navigationBarWithKitkatEnable = true;
     /**
      * 是否可以修改emui3系列手机导航栏
      * The Navigation bar with emui 3 enable.
      */
-    var navigationBarWithEMUI3Enable = true
-
+    public boolean navigationBarWithEMUI3Enable = true;
     /**
      * 是否可以沉浸式
      * The Init enable.
      */
-    var barEnable = true
-
+    public boolean barEnable = true;
     /**
      * 软键盘监听类
      * The On keyboard listener.
      */
-    var onKeyboardListener: OnKeyboardListener? = null
+    OnKeyboardListener onKeyboardListener;
 
     /**
      * 导航栏显示隐藏监听
      */
-    var onNavigationBarListener: OnNavigationBarListener? = null
+    OnNavigationBarListener onNavigationBarListener;
 
     /**
      * 横竖屏监听
      */
-    var onBarListener: OnBarListener? = null
+    OnBarListener onBarListener;
 
-    public override fun clone(): BarParams {
-        var barParams: BarParams? = null
+    @Override
+    protected BarParams clone() {
+        BarParams barParams = null;
         try {
-            barParams = super.clone() as BarParams
-        } catch (ignored: CloneNotSupportedException) {
+            barParams = (BarParams) super.clone();
+        } catch (CloneNotSupportedException ignored) {
         }
-        return barParams!!
+        return barParams;
     }
 }

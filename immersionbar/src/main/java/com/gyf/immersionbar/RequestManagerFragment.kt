@@ -1,57 +1,64 @@
-package com.gyf.immersionbar
+package com.gyf.immersionbar;
 
-import android.app.Dialog
-import android.content.res.Configuration
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.Fragment;
+import android.content.res.Configuration;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 /**
  * @author geyifeng
  * @date 2019/4/11 6:43 PM
  */
-class RequestManagerFragment : Fragment() {
-    private var mDelegate: ImmersionDelegate? = null
-    operator fun get(o: Any?): ImmersionBar? {
+public final class RequestManagerFragment extends Fragment {
+
+    private ImmersionDelegate mDelegate;
+
+    public ImmersionBar get(Object o) {
         if (mDelegate == null) {
-            mDelegate = ImmersionDelegate(o)
+            mDelegate = new ImmersionDelegate(o);
         }
-        return mDelegate!!.get()
+        return mDelegate.get();
     }
 
-    operator fun get(activity: AppCompatActivity?, dialog: Dialog?): ImmersionBar? {
+    public ImmersionBar get(Activity activity, Dialog dialog) {
         if (mDelegate == null) {
-            mDelegate = ImmersionDelegate(activity, dialog)
+            mDelegate = new ImmersionDelegate(activity, dialog);
         }
-        return mDelegate!!.get()
+        return mDelegate.get();
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         if (mDelegate != null) {
-            mDelegate!!.onActivityCreated(resources.configuration)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (mDelegate != null) {
-            mDelegate!!.onResume()
+            mDelegate.onActivityCreated(getResources().getConfiguration());
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    @Override
+    public void onResume() {
+        super.onResume();
         if (mDelegate != null) {
-            mDelegate!!.onDestroy()
-            mDelegate = null
+            mDelegate.onResume();
         }
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
         if (mDelegate != null) {
-            mDelegate!!.onConfigurationChanged(newConfig)
+            mDelegate.onDestroy();
+            mDelegate = null;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mDelegate != null) {
+            mDelegate.onConfigurationChanged(newConfig);
         }
     }
 }
