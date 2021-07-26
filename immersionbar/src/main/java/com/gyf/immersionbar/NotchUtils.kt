@@ -1,18 +1,15 @@
-package com.gyf.immersionbar;
+package com.gyf.immersionbar
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.os.Build;
-import android.util.TypedValue;
-import android.view.DisplayCutout;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowInsets;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.util.TypedValue
+import android.view.*
+import androidx.appcompat.app.AppCompatActivity
+import com.gyf.immersionbar.ImmersionBar
+import java.lang.reflect.InvocationTargetException
 
 /**
  * 刘海屏判断
@@ -21,34 +18,36 @@ import java.lang.reflect.Method;
  * @author geyifeng
  * @date 2018 /11/14 12:09 AM
  */
-public class NotchUtils {
-
+object NotchUtils {
     /**
      * 系统属性
      * The constant SYSTEM_PROPERTIES.
      */
-    private static final String SYSTEM_PROPERTIES = "android.os.SystemProperties";
+    private const val SYSTEM_PROPERTIES = "android.os.SystemProperties"
+
     /**
      * 小米刘海
      * The constant NOTCH_XIAO_MI.
      */
-    private static final String NOTCH_XIAO_MI = "ro.miui.notch";
+    private const val NOTCH_XIAO_MI = "ro.miui.notch"
+
     /**
      * 华为刘海
      * The constant NOTCH_HUA_WEI.
      */
-    private static final String NOTCH_HUA_WEI = "com.huawei.android.util.HwNotchSizeUtil";
+    private const val NOTCH_HUA_WEI = "com.huawei.android.util.HwNotchSizeUtil"
+
     /**
      * VIVO刘海
      * The constant NOTCH_VIVO.
      */
-    private static final String NOTCH_VIVO = "android.util.FtFeature";
+    private const val NOTCH_VIVO = "android.util.FtFeature"
+
     /**
      * OPPO刘海
      * The constant NOTCH_OPPO.
      */
-    private static final String NOTCH_OPPO = "com.oppo.feature.screen.heteromorphism";
-
+    private const val NOTCH_OPPO = "com.oppo.feature.screen.heteromorphism"
 
     /**
      * 判断是否是刘海屏
@@ -57,12 +56,12 @@ public class NotchUtils {
      * @param activity the activity
      * @return the boolean
      */
-    public static boolean hasNotchScreen(Activity activity) {
+    fun hasNotchScreen(activity: Activity?): Boolean {
         return activity != null && (hasNotchAtXiaoMi(activity) ||
                 hasNotchAtHuaWei(activity) ||
                 hasNotchAtOPPO(activity) ||
                 hasNotchAtVIVO(activity) ||
-                hasNotchAtAndroidP(activity));
+                hasNotchAtAndroidP(activity))
     }
 
     /**
@@ -72,12 +71,12 @@ public class NotchUtils {
      * @param view the view
      * @return the boolean
      */
-    public static boolean hasNotchScreen(View view) {
-        return view != null && (hasNotchAtXiaoMi(view.getContext()) ||
-                hasNotchAtHuaWei(view.getContext()) ||
-                hasNotchAtOPPO(view.getContext()) ||
-                hasNotchAtVIVO(view.getContext()) ||
-                hasNotchAtAndroidP(view));
+    fun hasNotchScreen(view: View?): Boolean {
+        return view != null && (hasNotchAtXiaoMi(view.context) ||
+                hasNotchAtHuaWei(view.context) ||
+                hasNotchAtOPPO(view.context) ||
+                hasNotchAtVIVO(view.context) ||
+                hasNotchAtAndroidP(view))
     }
 
     /**
@@ -86,8 +85,8 @@ public class NotchUtils {
      * @param view the view
      * @return the boolean
      */
-    private static boolean hasNotchAtAndroidP(View view) {
-        return getDisplayCutout(view) != null;
+    private fun hasNotchAtAndroidP(view: View): Boolean {
+        return getDisplayCutout(view) != null
     }
 
     /**
@@ -97,10 +96,9 @@ public class NotchUtils {
      * @param activity the activity
      * @return the boolean
      */
-    private static boolean hasNotchAtAndroidP(Activity activity) {
-        return getDisplayCutout(activity) != null;
+    private fun hasNotchAtAndroidP(activity: Activity): Boolean {
+        return getDisplayCutout(activity) != null
     }
-
 
     /**
      * 获得DisplayCutout
@@ -109,31 +107,31 @@ public class NotchUtils {
      * @param activity the activity
      * @return the display cutout
      */
-    private static DisplayCutout getDisplayCutout(Activity activity) {
+    private fun getDisplayCutout(activity: Activity?): DisplayCutout? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             if (activity != null) {
-                Window window = activity.getWindow();
+                val window = activity.window
                 if (window != null) {
-                    WindowInsets windowInsets = window.getDecorView().getRootWindowInsets();
+                    val windowInsets = window.decorView.rootWindowInsets
                     if (windowInsets != null) {
-                        return windowInsets.getDisplayCutout();
+                        return windowInsets.displayCutout
                     }
                 }
             }
         }
-        return null;
+        return null
     }
 
-    private static DisplayCutout getDisplayCutout(View view) {
+    private fun getDisplayCutout(view: View?): DisplayCutout? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             if (view != null) {
-                WindowInsets windowInsets = view.getRootWindowInsets();
+                val windowInsets = view.rootWindowInsets
                 if (windowInsets != null) {
-                    return windowInsets.getDisplayCutout();
+                    return windowInsets.displayCutout
                 }
             }
         }
-        return null;
+        return null
     }
 
     /**
@@ -143,23 +141,22 @@ public class NotchUtils {
      * @param context the context
      * @return the int
      */
-    private static boolean hasNotchAtXiaoMi(Context context) {
-        int result = 0;
-        if ("Xiaomi".equals(Build.MANUFACTURER)) {
+    private fun hasNotchAtXiaoMi(context: Context?): Boolean {
+        var result = 0
+        if ("Xiaomi" == Build.MANUFACTURER) {
             try {
-                ClassLoader classLoader = context.getClassLoader();
-                @SuppressLint("PrivateApi")
-                Class<?> aClass = classLoader.loadClass(SYSTEM_PROPERTIES);
-                Method method = aClass.getMethod("getInt", String.class, int.class);
-                result = (Integer) method.invoke(aClass, NOTCH_XIAO_MI, 0);
-
-            } catch (NoSuchMethodException ignored) {
-            } catch (IllegalAccessException ignored) {
-            } catch (InvocationTargetException ignored) {
-            } catch (ClassNotFoundException ignored) {
+                val classLoader = context!!.classLoader
+                @SuppressLint("PrivateApi") val aClass = classLoader.loadClass(SYSTEM_PROPERTIES)
+                val method =
+                    aClass.getMethod("getInt", String::class.java, Int::class.javaPrimitiveType)
+                result = method.invoke(aClass, NOTCH_XIAO_MI, 0) as Int
+            } catch (ignored: NoSuchMethodException) {
+            } catch (ignored: IllegalAccessException) {
+            } catch (ignored: InvocationTargetException) {
+            } catch (ignored: ClassNotFoundException) {
             }
         }
-        return result == 1;
+        return result == 1
     }
 
     /**
@@ -169,18 +166,18 @@ public class NotchUtils {
      * @param context the context
      * @return the boolean
      */
-    private static boolean hasNotchAtHuaWei(Context context) {
-        boolean result = false;
+    private fun hasNotchAtHuaWei(context: Context?): Boolean {
+        var result = false
         try {
-            ClassLoader classLoader = context.getClassLoader();
-            Class<?> aClass = classLoader.loadClass(NOTCH_HUA_WEI);
-            Method get = aClass.getMethod("hasNotchInScreen");
-            result = (boolean) get.invoke(aClass);
-        } catch (ClassNotFoundException ignored) {
-        } catch (NoSuchMethodException ignored) {
-        } catch (Exception ignored) {
+            val classLoader = context!!.classLoader
+            val aClass = classLoader.loadClass(NOTCH_HUA_WEI)
+            val get = aClass.getMethod("hasNotchInScreen")
+            result = get.invoke(aClass) as Boolean
+        } catch (ignored: ClassNotFoundException) {
+        } catch (ignored: NoSuchMethodException) {
+        } catch (ignored: Exception) {
         }
-        return result;
+        return result
     }
 
     /**
@@ -190,19 +187,18 @@ public class NotchUtils {
      * @param context the context
      * @return the boolean
      */
-    private static boolean hasNotchAtVIVO(Context context) {
-        boolean result = false;
+    private fun hasNotchAtVIVO(context: Context?): Boolean {
+        var result = false
         try {
-            ClassLoader classLoader = context.getClassLoader();
-            @SuppressLint("PrivateApi")
-            Class<?> aClass = classLoader.loadClass(NOTCH_VIVO);
-            Method method = aClass.getMethod("isFeatureSupport", int.class);
-            result = (boolean) method.invoke(aClass, 0x00000020);
-        } catch (ClassNotFoundException ignored) {
-        } catch (NoSuchMethodException ignored) {
-        } catch (Exception ignored) {
+            val classLoader = context!!.classLoader
+            @SuppressLint("PrivateApi") val aClass = classLoader.loadClass(NOTCH_VIVO)
+            val method = aClass.getMethod("isFeatureSupport", Int::class.javaPrimitiveType)
+            result = method.invoke(aClass, 0x00000020) as Boolean
+        } catch (ignored: ClassNotFoundException) {
+        } catch (ignored: NoSuchMethodException) {
+        } catch (ignored: Exception) {
         }
-        return result;
+        return result
     }
 
     /**
@@ -212,11 +208,11 @@ public class NotchUtils {
      * @param context the context
      * @return the boolean
      */
-    private static boolean hasNotchAtOPPO(Context context) {
-        try {
-            return context.getPackageManager().hasSystemFeature(NOTCH_OPPO);
-        } catch (Exception ignored) {
-            return false;
+    private fun hasNotchAtOPPO(context: Context?): Boolean {
+        return try {
+            context!!.packageManager.hasSystemFeature(NOTCH_OPPO)
+        } catch (ignored: Exception) {
+            false
         }
     }
 
@@ -227,41 +223,42 @@ public class NotchUtils {
      * @param activity the activity
      * @return the int
      */
-    public static int getNotchHeight(Activity activity) {
-        int notchHeight = 0;
-        int statusBarHeight = ImmersionBar.getStatusBarHeight(activity);
-        DisplayCutout displayCutout = getDisplayCutout(activity);
+    fun getNotchHeight(activity: AppCompatActivity?): Int {
+        var notchHeight = 0
+        val statusBarHeight: Int = ImmersionBar.getStatusBarHeight(activity!!)
+        val displayCutout = getDisplayCutout(activity)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && displayCutout != null) {
-            if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                notchHeight = displayCutout.getSafeInsetTop();
-            } else {
-                if (displayCutout.getSafeInsetLeft() == 0) {
-                    notchHeight = displayCutout.getSafeInsetRight();
+            notchHeight =
+                if (activity.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    displayCutout.safeInsetTop
                 } else {
-                    notchHeight = displayCutout.getSafeInsetLeft();
+                    if (displayCutout.safeInsetLeft == 0) {
+                        displayCutout.safeInsetRight
+                    } else {
+                        displayCutout.safeInsetLeft
+                    }
                 }
-            }
         } else {
             if (hasNotchAtXiaoMi(activity)) {
-                notchHeight = getXiaoMiNotchHeight(activity);
+                notchHeight = getXiaoMiNotchHeight(activity)
             }
             if (hasNotchAtHuaWei(activity)) {
-                notchHeight = getHuaWeiNotchSize(activity)[1];
+                notchHeight = getHuaWeiNotchSize(activity)[1]
             }
             if (hasNotchAtVIVO(activity)) {
-                notchHeight = dp2px(activity, 32);
+                notchHeight = dp2px(activity, 32)
                 if (notchHeight < statusBarHeight) {
-                    notchHeight = statusBarHeight;
+                    notchHeight = statusBarHeight
                 }
             }
             if (hasNotchAtOPPO(activity)) {
-                notchHeight = 80;
+                notchHeight = 80
                 if (notchHeight < statusBarHeight) {
-                    notchHeight = statusBarHeight;
+                    notchHeight = statusBarHeight
                 }
             }
         }
-        return notchHeight;
+        return notchHeight
     }
 
     /**
@@ -270,12 +267,12 @@ public class NotchUtils {
      * @param context the context
      * @return the xiao mi notch height
      */
-    private static int getXiaoMiNotchHeight(Context context) {
-        int resourceId = context.getResources().getIdentifier("notch_height", "dimen", "android");
-        if (resourceId > 0) {
-            return context.getResources().getDimensionPixelSize(resourceId);
+    private fun getXiaoMiNotchHeight(context: Context?): Int {
+        val resourceId = context!!.resources.getIdentifier("notch_height", "dimen", "android")
+        return if (resourceId > 0) {
+            context.resources.getDimensionPixelSize(resourceId)
         } else {
-            return 0;
+            0
         }
     }
 
@@ -285,19 +282,19 @@ public class NotchUtils {
      * @param context the context
      * @return the int [ ]
      */
-    private static int[] getHuaWeiNotchSize(Context context) {
-        int[] ret = new int[]{0, 0};
-        try {
-            ClassLoader cl = context.getClassLoader();
-            Class<?> aClass = cl.loadClass("com.huawei.android.util.HwNotchSizeUtil");
-            Method get = aClass.getMethod("getNotchSize");
-            return (int[]) get.invoke(aClass);
-        } catch (ClassNotFoundException ignored) {
-            return ret;
-        } catch (NoSuchMethodException ignored) {
-            return ret;
-        } catch (Exception ignored) {
-            return ret;
+    private fun getHuaWeiNotchSize(context: Context?): IntArray {
+        val ret = intArrayOf(0, 0)
+        return try {
+            val cl = context!!.classLoader
+            val aClass = cl.loadClass("com.huawei.android.util.HwNotchSizeUtil")
+            val get = aClass.getMethod("getNotchSize")
+            get.invoke(aClass) as IntArray
+        } catch (ignored: ClassNotFoundException) {
+            ret
+        } catch (ignored: NoSuchMethodException) {
+            ret
+        } catch (ignored: Exception) {
+            ret
         }
     }
 
@@ -308,8 +305,11 @@ public class NotchUtils {
      * @param dpValue the dp value
      * @return the int
      */
-    private static int dp2px(Context context, int dpValue) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, context.getResources().getDisplayMetrics());
+    private fun dp2px(context: Context?, dpValue: Int): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dpValue.toFloat(),
+            context!!.resources.displayMetrics
+        ).toInt()
     }
-
 }
